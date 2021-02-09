@@ -4,10 +4,15 @@
         Syötä tapahtuma
     </p>
     <br/>
-    <input type="text" v-model="postEvent" @change="postPost()">
+    <input type="text" v-model="postEvent" @change="postPost()" v-on:keyup.enter="onEnter">
     <ul v-if="errors && errors.length">
         <li v-for="error of errors" :key="error.message">
             {{ error.message }}
+        </li>
+    </ul>
+    <ul v-if="success">
+        <li>
+            {{ success }}
         </li>
     </ul>
 </div>
@@ -21,19 +26,32 @@ import axios from 'axios'
     data() {
         return {
             postEvent: '',
-            errors: []
+            errors: [],
+            success: ''
             }
         },
 
     methods: {
+        onEnter: function() {
+            if (this.postEvent.length < 1) {
+                this.success = "",
+                this.errors.push({ message: "Tyhjä sisältökenttä" })
+            } else {
+                this.errors = [],
+                this.success = "Tiedot lähetetty",
+                this.postEvent = ""
+            }
+        },
         postPost() {
-            axios.post(`http://localhost:3001/notes`, {
-                content: this.postEvent,
-                important: false
-            })
-            .catch(e => {
-                this.errors.push(e)
-            })
+            if (this.postEvent.length > 0) {
+                axios.post(`http://localhost:3001/notes`, {
+                    content: this.postEvent,
+                    important: false
+                })
+                .catch(e => {
+                    this.errors.push(e)
+                })
+            }
         }
     }
 };
